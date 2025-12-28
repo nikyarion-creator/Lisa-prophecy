@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Новогоднее предсказание 2026 — Рабочая версия</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:#07102a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+  .card{width:100%;max-width:460px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border-radius:18px;padding:26px;text-align:center;position:relative;z-index:10;box-shadow:0 18px 50px rgba(2,6,23,.6)}
+  h1{margin:6px 0 8px;font-size:20px}
+  .orb{width:88px;height:88px;border-radius:50%;margin:0 auto 12px;background:radial-gradient(circle at 30% 30%,#ffe7a3,#f0b429,#b8860b);box-shadow:0 0 30px rgba(255,215,0,.7);display:block}
+  .subtitle{opacity:.9;margin-bottom:12px}
+  .prediction{min-height:4em;font-size:1.05rem;line-height:1.45;margin:12px 6px;transition:transform .28s cubic-bezier(.2,.9,.3,1),opacity .22s ease;will-change:transform,opacity;display:flex;align-items:center;justify-content:center}
+  .prediction.hidden{opacity:0;transform:translateY(8px) scale(.98)}
+  .btn{margin-top:12px;border:none;padding:12px 18px;border-radius:999px;font-weight:700;background:linear-gradient(180deg,#fff1a8,#f2c94c);color:#111;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.32);-webkit-tap-highlight-color:transparent}
+  .btn[disabled]{opacity:.6;cursor:default}
+  .hint{opacity:.75;font-size:.86rem;margin-top:10px}
+  /* snow layer behind card */
+  .bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .flake{position:absolute;top:-12px;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.95);filter:blur(.2px);opacity:.85}
+  /* confetti (canvas) sits above bg but below card */
+  #confettiCanvas{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:5}
+  /* accessibility focus */
+  .btn:focus{outline:3px solid rgba(242,201,76,.25);outline-offset:3px}
+  /* small mobile tweak to ensure button not overlapped */
+  @media (max-width:420px){.card{padding:20px}}
+</style>
+</head>
+<body>
+  <div class="bg-layer" id="bg"></div>
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="wrap">
+    <div class="card" role="region" aria-label="Новогоднее предсказание 2026">
+      <span class="orb" aria-hidden="true"></span>
+      <h1>С Новым 2026 годом!</h1>
+      <div class="subtitle">Пусть он принесёт тебе вот это ✨</div>
+      <div id="prediction" class="prediction" aria-live="polite">Загружаем предсказание…</div>
+      <button id="nextBtn" class="btn" type="button" aria-label="Открыть ещё одно предсказание">Открыть ещё одно</button>
+      <div class="hint">Каждый клик — новое предсказание</div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  // Набор предсказаний — добавь свои строки
+  const predictions = [
+    "В 2026 ты сделаешь уверенный шаг в сторону денег — и он окупится.",
+    "Случайная встреча перерастёт во что-то важное.",
+    "Ты отпустишь прошлое и почувствуешь редкое спокойствие.",
+    "Новый год — время выбрать себя. Ты это сделаешь.",
+    "Одна идея принесёт больше, чем ты рассчитывала.",
+    "Появится проект, который откроет новые двери.",
+    "Твоя энергия станет магнитом для правильных людей.",
+    "Ты удивишься, насколько легче стало дышать.",
+    "Финал года принесёт повод для собственной гордости.",
+    "В 2026 ты встретишь шанс, который стоило ждать."
+  ];
+
+  const el = document.getElementById('prediction');
+  const btn = document.getElementById('nextBtn');
+  const canvas = document.getElementById('confettiCanvas');
+  let animating = false;
+
+  function randomIndex(){ return Math.floor(Math.random()*predictions.length); }
+
+  function showAnimatedPrediction(){
+    if(animating) return;
+    animating = true;
+    btn.disabled = true;
+
+    el.classList.add('hidden');
+
+    setTimeout(() => {
+      const idx = randomIndex();
+      el.textContent = predictions[idx];
+
+      el.style.transform = 'translateY(6px) scale(.98)';
+      requestAnimationFrame(() => {
+        el.classList.remove('hidden');
+        el.style.transform = 'translateY(0) scale(1)';
+      });
+
+      confettiBurst();
+
+      setTimeout(() => {
+        btn.disabled = false;
+        animating = false;
+      }, 480);
+    }, 220);
+  }
+
+  // Надёжное срабатывание в WebView: click + touchstart
+  btn.addEventListener('click', showAnimatedPrediction, {passive:true});
+  btn.addEventListener('touchstart', function(e){ e.preventDefault(); showAnimatedPrediction(); }, {passive:false});
+
+  // стартовое предсказание
+  setTimeout(showAnimatedPrediction, 140);
+
+  // SNOW (фон)
+  const bg = document.getElementById('bg');
+  for(let i=0;i<36;i++){
+    const f = document.createElement('div');
+    f.className = 'flake';
+    const size = 4 + Math.random()*8;
+    f.style.width = size+'px';
+    f.style.height = size+'px';
+    f.style.left = (Math.random()*100) + 'vw';
+    f.style.top = (-10 - Math.random()*40) + 'vh';
+    f.style.opacity = (0.35 + Math.random()*0.9).toFixed(2);
+    const dur = 6 + Math.random()*10;
+    f.style.transition = 'transform '+dur+'s linear';
+    setTimeout(()=>{ const xMove = (Math.random()*40 - 20); f.style.transform = 'translate('+xMove+'vw, 120vh)'; }, 50 + Math.random()*800);
+    bg.appendChild(f);
+  }
+
+  // Confetti (canvas) — короткий burst
+  function confettiBurst(){
+    const ctx = canvas.getContext('2d');
+    const DPR = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * DPR;
+    canvas.height = window.innerHeight * DPR;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    ctx.scale(DPR, DPR);
+
+    const pieces = [];
+    const colors = ['#f2c94c','#ffd89c','#ffffff','#f6e7b4','#ffd6a8'];
+    const cx = window.innerWidth/2;
+    const cy = window.innerHeight/3;
+
+    for(let i=0;i<24;i++){
+      pieces.push({
+        x: cx + (Math.random()*240 - 120),
+        y: cy + (Math.random()*40 - 20),
+        vx: (Math.random()*6 - 3),
+        vy: (Math.random()*-8 - 2),
+        r: 6 + Math.random()*6,
+        color: colors[Math.floor(Math.random()*colors.length)],
+        rot: Math.random()*360,
+        vr: (Math.random()*10 - 5)
+      });
+    }
+
+    let t0 = performance.now();
+    function frame(now){
+      const dt = (now - t0) / 1000; t0 = now;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(let p of pieces){
+        p.vy += 14 * dt;
+        p.x += p.vx;
+        p.y += p.vy * dt * 60 / 60;
+        p.rot += p.vr * dt * 60;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot * Math.PI/180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r*0.6);
+        ctx.restore();
+      }
+      if(performance.now() - startTime < 700){
+        requestAnimationFrame(frame);
+      } else {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+      }
+    }
+    const startTime = performance.now();
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', function(){
+    canvas.width = window.innerWidth * (window.devicePixelRatio||1);
+    canvas.height = window.innerHeight * (window.devicePixelRatio||1);
+  });
+})();
+</script>
+</body>
+</html>
